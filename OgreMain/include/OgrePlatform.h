@@ -181,13 +181,15 @@ THE SOFTWARE.
 #elif defined(__EMSCRIPTEN__)
 #   define OGRE_PLATFORM OGRE_PLATFORM_EMSCRIPTEN
 #elif defined( __APPLE_CC__)
-    // Device                                                     Simulator
-    // Both requiring OS version 6.0 or greater
-#   if __ENVIRONMENT_IPHONE_OS_VERSION_MIN_REQUIRED__ >= 60000 || __IPHONE_OS_VERSION_MIN_REQUIRED >= 60000
-#       define OGRE_PLATFORM OGRE_PLATFORM_APPLE_IOS
-#   else
-#       define OGRE_PLATFORM OGRE_PLATFORM_APPLE
-#   endif
+// Device                                                     Simulator
+// Both requiring OS version 6.0 or greater
+#    if __ENVIRONMENT_IPHONE_OS_VERSION_MIN_REQUIRED__ >= 60000 || \
+        __IPHONE_OS_VERSION_MIN_REQUIRED >= 60000 || \
+        ( defined( __has_builtin ) && __has_builtin( __is_target_os ) && __is_target_os( xros ) )
+#        define OGRE_PLATFORM OGRE_PLATFORM_APPLE_IOS
+#    else
+#        define OGRE_PLATFORM OGRE_PLATFORM_APPLE
+#    endif
 #elif defined(__ANDROID__)
 #   define OGRE_PLATFORM OGRE_PLATFORM_ANDROID
 #elif defined( __native_client__ ) 
@@ -323,9 +325,15 @@ THE SOFTWARE.
     #define OGRE_PLATFORM_LIB "libOgrePlatform.so"
 #endif
 
+#    if OGRE_PLATFORM == OGRE_PLATFORM_APPLE || OGRE_PLATFORM == OGRE_PLATFORM_APPLE_IOS
+// XCode 16.3 fails to compile our UTFString due undefined std::char_traits<ushort>
+// TODO: migrate from Ogre::UTFString to C++11 std::u16string
+#        define OGRE_UNICODE_SUPPORT 0
+#    else
 // Always enable unicode support for the moment
 // Perhaps disable in old versions of gcc if necessary
-#define OGRE_UNICODE_SUPPORT 1
+#        define OGRE_UNICODE_SUPPORT 1
+#    endif
 
 #endif
 
